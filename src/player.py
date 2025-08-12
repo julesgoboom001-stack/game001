@@ -252,6 +252,67 @@ class Player:
                 self.stats['health'] = int(self.stats['health'] * 1.15)
                 self.stats['damage_reduction'] = self.stats.get('damage_reduction', 0) + 0.05
 
+        # Beast Master Bonuses
+        elif self.character.name == "Beast Master":
+            if self.element == "Fire":
+                self.stats['dexterity'] = int(self.stats['dexterity'] * 1.15)
+            elif self.element == "Earth":
+                self.stats['health'] = int(self.stats['health'] * 1.15)
+            elif self.element == "Poison":
+                self.stats['lifesteal'] = self.stats.get('lifesteal', 0) + 0.05
+            elif self.element == "Water":
+                self.stats['health'] = int(self.stats['health'] * 1.10)
+                self.stats['cooldown_reduction'] = self.stats.get('cooldown_reduction', 0) + 0.10
+            elif self.element == "Air":
+                self.speed *= 1.15
+            elif self.element == "Dark":
+                self.stats['lifesteal'] = self.stats.get('lifesteal', 0) + 0.10
+            elif self.element == "Light":
+                self.stats['damage_reduction'] = self.stats.get('damage_reduction', 0) + 0.10
+
+        # Necromancer Bonuses
+        elif self.character.name == "Necromancer":
+            if self.element == "Fire":
+                self.stats['intelligence'] = int(self.stats['intelligence'] * 1.20)
+            elif self.element == "Earth":
+                self.stats['health'] = int(self.stats['health'] * 1.20)
+            elif self.element == "Poison":
+                self.stats['intelligence'] = int(self.stats['intelligence'] * 1.15)
+                self.stats['damage_reduction'] = self.stats.get('damage_reduction', 0) + 0.05
+            elif self.element == "Water":
+                self.stats['health'] = int(self.stats['health'] * 1.10)
+                self.stats['lifesteal'] = self.stats.get('lifesteal', 0) + 0.10
+            elif self.element == "Air":
+                self.speed *= 1.10
+                self.stats['cooldown_reduction'] = self.stats.get('cooldown_reduction', 0) + 0.10
+            elif self.element == "Dark":
+                self.stats['intelligence'] = int(self.stats['intelligence'] * 1.25)
+            elif self.element == "Light":
+                self.stats['intelligence'] = int(self.stats['intelligence'] * 1.15)
+                self.stats['damage_reduction'] = self.stats.get('damage_reduction', 0) + 0.05
+
+        # Demonic Bonuses
+        elif self.character.name == "Demonic":
+            if self.element == "Fire":
+                self.stats['intelligence'] = int(self.stats['intelligence'] * 1.25)
+            elif self.element == "Earth":
+                self.stats['strength'] = int(self.stats['strength'] * 1.10)
+                self.stats['health'] = int(self.stats['health'] * 1.15)
+            elif self.element == "Poison":
+                self.stats['intelligence'] = int(self.stats['intelligence'] * 1.15)
+                self.stats['lifesteal'] = self.stats.get('lifesteal', 0) + 0.05
+            elif self.element == "Water":
+                self.stats['health'] = int(self.stats['health'] * 1.15)
+                self.stats['intelligence'] = int(self.stats['intelligence'] * 1.10)
+            elif self.element == "Air":
+                self.speed *= 1.10
+                self.stats['intelligence'] = int(self.stats['intelligence'] * 1.10)
+            elif self.element == "Dark":
+                self.stats['intelligence'] = int(self.stats['intelligence'] * 1.30)
+                self.stats['health'] = int(self.stats['health'] * 0.90)
+            elif self.element == "Light":
+                self.stats['damage_reduction'] = self.stats.get('damage_reduction', 0) + 0.15
+
         # After applying bonuses, it's good to log the final stats for debugging
         print(f"Final stats for {self.character.name} ({self.element}): {self.stats}")
         print(f"Final speed: {self.speed}")
