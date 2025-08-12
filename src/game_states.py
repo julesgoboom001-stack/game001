@@ -204,7 +204,18 @@ class Gameplay(BaseState):
         for projectile in self.projectiles[:]:
             for enemy in self.enemies[:]:
                 if projectile.rect.colliderect(enemy.rect):
-                    enemy.health -= projectile.damage
+                    damage_dealt = projectile.damage
+                    enemy.health -= damage_dealt
+
+                    # Lifesteal logic
+                    if self.player:
+                        lifesteal_stat = self.player.stats.get("lifesteal", 0)
+                        if lifesteal_stat > 0:
+                            lifesteal_amount = damage_dealt * lifesteal_stat
+                            self.player.health += lifesteal_amount
+                            if self.player.health > self.player.stats['health']:
+                                self.player.health = self.player.stats['health']
+
                     if projectile in self.projectiles:
                         self.projectiles.remove(projectile)
                     if enemy.health <= 0:
@@ -223,6 +234,12 @@ class Gameplay(BaseState):
                 if enemy.is_attacking and enemy.rect.colliderect(self.player.rect):
                     damage_taken = 1 * (1 - self.player.stats.get("damage_reduction", 0))
                     self.player.health -= damage_taken
+
+                    # Thorns logic
+                    thorns_damage = self.player.stats.get("thorns", 0)
+                    if thorns_damage > 0:
+                        enemy.health -= thorns_damage
+                        print(f"Enemy took {thorns_damage} thorns damage.")
 
         # Remove projectiles that are off-screen
         self.projectiles = [p for p in self.projectiles if 0 < p.x < 800 and 0 < p.y < 600]

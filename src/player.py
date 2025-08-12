@@ -37,6 +37,7 @@ class Player:
             self.selected_power = self.powers[self.current_power_index]
         else:
             self.selected_power = None
+        self.cooldown_timer = 0
 
         # Animation attributes
         self.sprites = [
@@ -55,7 +56,10 @@ class Player:
         new_projectiles = []
         for event in events:
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE and self.selected_power:
+                if event.key == pygame.K_SPACE and self.selected_power and self.cooldown_timer == 0:
+                    cooldown_reduction = self.stats.get("cooldown_reduction", 0)
+                    actual_cooldown = self.selected_power.cooldown * (1 - cooldown_reduction)
+                    self.cooldown_timer = int(actual_cooldown)
                     mouse_x, mouse_y = pygame.mouse.get_pos()
                     dx = mouse_x - self.x
                     dy = mouse_y - self.y
@@ -79,6 +83,10 @@ class Player:
         return new_projectiles
 
     def update(self):
+        # Cooldown timer
+        if self.cooldown_timer > 0:
+            self.cooldown_timer -= 1
+
         self.is_moving = False
         keys = pygame.key.get_pressed()
         if keys[pygame.K_LEFT] or keys[pygame.K_a]:
@@ -126,10 +134,65 @@ class Player:
                 self.stats[stat] = self.stats.get(stat, 0) + value
 
     def apply_elemental_bonus(self):
-        # Earth Brute: +20% damage reduction
-        if self.character.name == "Brute" and self.element == "Earth":
-            self.stats["damage_reduction"] = self.stats.get("damage_reduction", 0) + 0.2
-            print(f"Earth Brute bonus applied: damage_reduction is now {self.stats.get('damage_reduction', 0)}")
+        # Warrior Bonuses
+        if self.character.name == "Warrior":
+            if self.element == "Fire":
+                self.stats['strength'] = int(self.stats['strength'] * 1.15)
+            elif self.element == "Earth":
+                self.stats['health'] = int(self.stats['health'] * 1.10)
+            elif self.element == "Poison":
+                self.stats['dexterity'] = int(self.stats['dexterity'] * 1.10)
+            elif self.element == "Water":
+                self.stats['cooldown_reduction'] = self.stats.get('cooldown_reduction', 0) + 0.10
+            elif self.element == "Air":
+                self.speed *= 1.10
+            elif self.element == "Dark":
+                self.stats['lifesteal'] = self.stats.get('lifesteal', 0) + 0.02
+            elif self.element == "Light":
+                self.stats['damage_reduction'] = self.stats.get('damage_reduction', 0) + 0.05
+
+        # Paladin Bonuses
+        elif self.character.name == "Paladin":
+            if self.element == "Fire":
+                self.stats['intelligence'] = int(self.stats['intelligence'] * 1.15)
+            elif self.element == "Earth":
+                self.stats['health'] = int(self.stats['health'] * 1.15)
+            elif self.element == "Poison":
+                self.stats['health'] = int(self.stats['health'] * 1.10)
+                self.stats['damage_reduction'] = self.stats.get('damage_reduction', 0) + 0.05
+            elif self.element == "Water":
+                self.stats['health'] = int(self.stats['health'] * 1.20)
+            elif self.element == "Air":
+                self.speed *= 1.05
+                self.stats['cooldown_reduction'] = self.stats.get('cooldown_reduction', 0) + 0.05
+            elif self.element == "Dark":
+                self.stats['strength'] = int(self.stats['strength'] * 1.20)
+                self.stats['health'] = int(self.stats['health'] * 0.90)
+            elif self.element == "Light":
+                self.stats['damage_reduction'] = self.stats.get('damage_reduction', 0) + 0.10
+
+        # Brute Bonuses
+        elif self.character.name == "Brute":
+            if self.element == "Fire":
+                self.stats['strength'] = int(self.stats['strength'] * 1.25)
+            elif self.element == "Earth":
+                self.stats['damage_reduction'] = self.stats.get('damage_reduction', 0) + 0.20
+            elif self.element == "Poison":
+                self.stats['thorns'] = self.stats.get('thorns', 0) + 5
+            elif self.element == "Water":
+                self.stats['health'] = int(self.stats['health'] * 1.25)
+            elif self.element == "Air":
+                self.speed *= 1.15
+            elif self.element == "Dark":
+                self.stats['strength'] = int(self.stats['strength'] * 1.40)
+                self.stats['damage_reduction'] = self.stats.get('damage_reduction', 0) - 0.10
+            elif self.element == "Light":
+                self.stats['health'] = int(self.stats['health'] * 1.20)
+                self.stats['damage_reduction'] = self.stats.get('damage_reduction', 0) + 0.05
+
+        # After applying bonuses, it's good to log the final stats for debugging
+        print(f"Final stats for {self.character.name} ({self.element}): {self.stats}")
+        print(f"Final speed: {self.speed}")
 
     def draw(self, screen):
         screen.blit(self.image, self.rect)
