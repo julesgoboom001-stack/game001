@@ -1,4 +1,5 @@
 import pygame
+from game_states import StateManager, CharacterSelection, Gameplay
 
 # Initialize Pygame
 pygame.init()
@@ -14,22 +15,30 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Diablo-like Game")
 
 def main():
-    """Main game loop."""
-    running = True
-    while running:
-        # Event handling
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
+    """Main function."""
+    print("Game starting...")
+    state_manager = StateManager(screen)
 
-        # Fill the screen with black
-        screen.fill((0, 0, 0))
+    # Create states
+    character_selection_state = CharacterSelection(state_manager)
+    gameplay_state = Gameplay(state_manager)
 
-        # Update the display
+    # Add states to the manager
+    state_manager.add_state("CHARACTER_SELECTION", character_selection_state)
+    state_manager.add_state("GAMEPLAY", gameplay_state)
+
+    # Set the initial state
+    state_manager.set_state("CHARACTER_SELECTION")
+
+    clock = pygame.time.Clock()
+
+    while True:
+        events = pygame.event.get()
+        state_manager.handle_events(events)
+        state_manager.update()
+        state_manager.draw()
         pygame.display.flip()
-
-    # Quit Pygame
-    pygame.quit()
+        clock.tick(60)
 
 if __name__ == "__main__":
     main()
