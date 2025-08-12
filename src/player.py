@@ -2,6 +2,7 @@ import pygame
 from projectile import Projectile
 import math
 from items import all_items
+from skills import Skill
 
 class Player:
     def __init__(self, character):
@@ -12,6 +13,10 @@ class Player:
 
         self.inventory = []
         self.equipment = {}
+        self.skills = {
+            "mining": Skill(),
+            "blacksmithing": Skill(),
+        }
 
         # Equip a sword by default for testing
         self.equipment["weapon"] = all_items["sword"]
