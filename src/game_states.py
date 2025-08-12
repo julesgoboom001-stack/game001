@@ -86,10 +86,11 @@ class CharacterSelection(BaseState):
             text_rect = text.get_rect(center=(400, 200 + i * 50))
             screen.blit(text, text_rect)
 
+from player import Player
+
 class Gameplay(BaseState):
     def __init__(self, state_manager):
         super().__init__(state_manager)
-        self.font = pygame.font.Font(None, 36)
         self.player = None
 
     def on_enter(self, data=None):
@@ -97,9 +98,8 @@ class Gameplay(BaseState):
         if data and "character_name" in data:
             character_name = data["character_name"]
             print(f"Selected character: {character_name}")
-            # Create a player instance
-            character_class = character_classes[character_name]
-            self.player = character_class()
+            character_data = character_classes[character_name]()
+            self.player = Player(character_data)
         else:
             print("No character selected, returning to selection.")
             self.state_manager.set_state("CHARACTER_SELECTION")
@@ -107,11 +107,16 @@ class Gameplay(BaseState):
     def on_exit(self):
         print("Exiting Gameplay")
 
-    def draw(self, screen):
-        screen.fill((0, 100, 0))
+    def handle_events(self, events):
+        super().handle_events(events)
         if self.player:
-            text = self.font.render(f"Playing as {self.player.name}", True, (255, 255, 255))
-        else:
-            text = self.font.render("Gameplay (no character)", True, (255, 255, 255))
-        text_rect = text.get_rect(center=(400, 300))
-        screen.blit(text, text_rect)
+            self.player.handle_events(events)
+
+    def update(self):
+        if self.player:
+            self.player.update()
+
+    def draw(self, screen):
+        screen.fill((0, 100, 0)) # Green background
+        if self.player:
+            self.player.draw(screen)
