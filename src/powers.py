@@ -25,3 +25,25 @@ all_powers = {
     "dagger_throw": dagger_throw,
     "throwing_axe": throwing_axe,
 }
+
+import copy
+
+def get_elemental_power(base_power, element):
+    """
+    Takes a base power and an element and returns a new Power instance
+    with elemental modifications.
+    """
+    elemental_power = copy.copy(base_power)
+
+    if element == "Fire":
+        elemental_power.name = f"Fire {base_power.name}"
+        elemental_power.damage = int(elemental_power.damage * 1.2)
+        if "fireball" not in elemental_power.projectile_sprite:
+            elemental_power.projectile_sprite = "assets/sprites/fireball.ppm"
+    elif element == "Water": # Using ice_bolt for Water
+        elemental_power.name = f"Water {base_power.name}"
+        if "ice_bolt" not in elemental_power.projectile_sprite:
+            elemental_power.projectile_sprite = "assets/sprites/ice_bolt.ppm"
+    # Other elements can be added here.
+
+    return elemental_power

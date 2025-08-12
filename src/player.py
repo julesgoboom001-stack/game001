@@ -3,10 +3,12 @@ from projectile import Projectile
 import math
 from items import all_items
 from skills import Skill
+from powers import get_elemental_power
 
 class Player:
-    def __init__(self, character):
+    def __init__(self, character, element):
         self.character = character
+        self.element = element
         self.level = 1
         self.xp = 0
         self.xp_to_next_level = 100
@@ -22,13 +24,14 @@ class Player:
         self.equipment["weapon"] = all_items["sword"]
 
         self.recalculate_stats()
+        self.apply_elemental_bonus()
         self.health = self.stats["health"]
 
         self.x = 400
         self.y = 300
         self.speed = 5
 
-        self.powers = self.character.powers
+        self.powers = [get_elemental_power(p, self.element) for p in self.character.powers]
         self.current_power_index = 0
         if self.powers:
             self.selected_power = self.powers[self.current_power_index]
@@ -121,6 +124,12 @@ class Player:
         for item in self.equipment.values():
             for stat, value in item.stats.items():
                 self.stats[stat] = self.stats.get(stat, 0) + value
+
+    def apply_elemental_bonus(self):
+        # Earth Brute: +20% damage reduction
+        if self.character.name == "Brute" and self.element == "Earth":
+            self.stats["damage_reduction"] = self.stats.get("damage_reduction", 0) + 0.2
+            print(f"Earth Brute bonus applied: damage_reduction is now {self.stats.get('damage_reduction', 0)}")
 
     def draw(self, screen):
         screen.blit(self.image, self.rect)

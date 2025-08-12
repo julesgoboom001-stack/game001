@@ -72,7 +72,7 @@ class CharacterSelection(BaseState):
                     self.selected_index = (self.selected_index + 1) % len(self.character_names)
                 elif event.key == pygame.K_RETURN:
                     selected_character_name = self.character_names[self.selected_index]
-                    self.state_manager.set_state("GAMEPLAY", {"character_name": selected_character_name})
+                    self.state_manager.set_state("ELEMENT_SELECTION", {"character_name": selected_character_name})
 
     def draw(self, screen):
         screen.fill((100, 100, 100))
@@ -85,6 +85,50 @@ class CharacterSelection(BaseState):
             text = self.font.render(name, True, color)
             text_rect = text.get_rect(center=(400, 200 + i * 50))
             screen.blit(text, text_rect)
+
+
+class ElementSelection(BaseState):
+    def __init__(self, state_manager):
+        super().__init__(state_manager)
+        self.font = pygame.font.Font(None, 36)
+        self.elements = ["Fire", "Earth", "Poison", "Water", "Air", "Dark", "Light"]
+        self.selected_index = 0
+        self.character_name = None
+
+    def on_enter(self, data=None):
+        print("Entering Element Selection")
+        self.character_name = data.get("character_name") if data else None
+
+    def on_exit(self):
+        print("Exiting Element Selection")
+
+    def handle_events(self, events):
+        super().handle_events(events)
+        for event in events:
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_UP:
+                    self.selected_index = (self.selected_index - 1) % len(self.elements)
+                elif event.key == pygame.K_DOWN:
+                    self.selected_index = (self.selected_index + 1) % len(self.elements)
+                elif event.key == pygame.K_RETURN:
+                    selected_element = self.elements[self.selected_index]
+                    self.state_manager.set_state("GAMEPLAY", {
+                        "character_name": self.character_name,
+                        "element": selected_element
+                    })
+
+    def draw(self, screen):
+        screen.fill((100, 100, 100))
+        title_text = self.font.render("Select Your Element", True, (255, 255, 255))
+        title_rect = title_text.get_rect(center=(400, 100))
+        screen.blit(title_text, title_rect)
+
+        for i, name in enumerate(self.elements):
+            color = (255, 255, 0) if i == self.selected_index else (255, 255, 255)
+            text = self.font.render(name, True, color)
+            text_rect = text.get_rect(center=(400, 200 + i * 50))
+            screen.blit(text, text_rect)
+
 
 from player import Player
 from enemy import Enemy
@@ -105,11 +149,12 @@ class Gameplay(BaseState):
         print("Entering Gameplay")
         if data and "player" in data:
             self.player = data["player"]
-        elif data and "character_name" in data:
+        elif data and "character_name" in data and "element" in data:
             character_name = data["character_name"]
-            print(f"Selected character: {character_name}")
+            element = data["element"]
+            print(f"Selected character: {character_name}, Element: {element}")
             character_data = character_classes[character_name]()
-            self.player = Player(character_data)
+            self.player = Player(character_data, element)
 
             self.enemies.append(Enemy(100, 100))
             self.resource_nodes.append(
@@ -176,7 +221,8 @@ class Gameplay(BaseState):
         if self.player:
             for enemy in self.enemies:
                 if enemy.is_attacking and enemy.rect.colliderect(self.player.rect):
-                    self.player.health -= 1
+                    damage_taken = 1 * (1 - self.player.stats.get("damage_reduction", 0))
+                    self.player.health -= damage_taken
 
         # Remove projectiles that are off-screen
         self.projectiles = [p for p in self.projectiles if 0 < p.x < 800 and 0 < p.y < 600]
