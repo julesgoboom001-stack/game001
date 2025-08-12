@@ -89,6 +89,7 @@ class CharacterSelection(BaseState):
 from player import Player
 from enemy import Enemy
 from projectile import Projectile
+from items import all_items
 
 class Gameplay(BaseState):
     def __init__(self, state_manager):
@@ -128,6 +129,11 @@ class Gameplay(BaseState):
             new_projectiles = self.player.handle_events(events)
             self.projectiles.extend(new_projectiles)
 
+        for event in events:
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_i:
+                    self.state_manager.set_state("INVENTORY", {"player": self.player})
+
     def update(self):
         if self.player:
             self.player.update()
@@ -147,6 +153,10 @@ class Gameplay(BaseState):
                         if enemy in self.enemies:
                             self.enemies.remove(enemy)
                             if self.player:
+                                # Add loot to player's inventory
+                                self.player.inventory.append(all_items["sword"])
+                                print("You got a sword!")
+
                                 if self.player.add_xp(enemy.xp_value):
                                     self.player.level_up()
                                     self.state_manager.set_state("LEVEL_UP", {"player": self.player})
@@ -231,3 +241,67 @@ class LevelUp(BaseState):
             text = self.font.render(power.name, True, color)
             text_rect = text.get_rect(center=(400, 200 + i * 50))
             screen.blit(text, text_rect)
+
+class Inventory(BaseState):
+    def __init__(self, state_manager):
+        super().__init__(state_manager)
+        self.font = pygame.font.Font(None, 36)
+        self.player = None
+        self.selected_index = 0
+
+    def on_enter(self, data=None):
+        print("Entering Inventory screen")
+        self.player = data.get("player") if data else None
+
+    def handle_events(self, events):
+        super().handle_events(events)
+        for event in events:
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_i: # Press 'i' to exit
+                    self.state_manager.set_state("GAMEPLAY", {"player": self.player})
+                elif event.key == pygame.K_UP:
+                    if self.player and self.player.inventory:
+                        self.selected_index = (self.selected_index - 1) % len(self.player.inventory)
+                elif event.key == pygame.K_DOWN:
+                    if self.player and self.player.inventory:
+                        self.selected_index = (self.selected_index + 1) % len(self.player.inventory)
+                elif event.key == pygame.K_RETURN: # Equip item
+                    if self.player and self.player.inventory:
+                        item_to_equip = self.player.inventory[self.selected_index]
+                        # For now, only equip Equipment
+                        from items import Equipment
+                        if isinstance(item_to_equip, Equipment):
+                            # Unequip any existing item in the same slot
+                            if item_to_equip.slot in self.player.equipment:
+                                self.player.inventory.append(self.player.equipment[item_to_equip.slot])
+
+                            self.player.equipment[item_to_equip.slot] = item_to_equip
+                            self.player.inventory.pop(self.selected_index)
+                            self.player.recalculate_stats()
+                            print(f"Equipped {item_to_equip.name}")
+
+    def draw(self, screen):
+        screen.fill((20, 20, 80)) # Dark blue background
+
+        # Draw Title
+        title_text = self.font.render("Inventory", True, (255, 255, 255))
+        screen.blit(title_text, (350, 20))
+
+        # Draw Inventory
+        inv_title = self.font.render("Inventory", True, (255, 255, 255))
+        screen.blit(inv_title, (100, 80))
+        if self.player:
+            for i, item in enumerate(self.player.inventory):
+                color = (255, 255, 0) if i == self.selected_index else (255, 255, 255)
+                item_text = self.font.render(item.name, True, color)
+                screen.blit(item_text, (100, 120 + i * 40))
+
+        # Draw Equipment
+        eq_title = self.font.render("Equipment", True, (255, 255, 255))
+        screen.blit(eq_title, (500, 80))
+        if self.player:
+            y_offset = 0
+            for slot, item in self.player.equipment.items():
+                item_text = self.font.render(f"{slot}: {item.name}", True, (255, 255, 255))
+                screen.blit(item_text, (500, 120 + y_offset * 40))
+                y_offset += 1

@@ -1,14 +1,24 @@
 import pygame
 from projectile import Projectile
 import math
+from items import all_items
 
 class Player:
     def __init__(self, character):
         self.character = character
-        self.health = self.character.stats["health"]
         self.level = 1
         self.xp = 0
         self.xp_to_next_level = 100
+
+        self.inventory = []
+        self.equipment = {}
+
+        # Equip a sword by default for testing
+        self.equipment["weapon"] = all_items["sword"]
+
+        self.recalculate_stats()
+        self.health = self.stats["health"]
+
         self.x = 400
         self.y = 300
         self.speed = 5
@@ -100,6 +110,12 @@ class Player:
         self.xp -= self.xp_to_next_level
         self.xp_to_next_level = int(self.xp_to_next_level * 1.5)
         print(f"Leveled up to level {self.level}!")
+
+    def recalculate_stats(self):
+        self.stats = self.character.stats.copy()
+        for item in self.equipment.values():
+            for stat, value in item.stats.items():
+                self.stats[stat] = self.stats.get(stat, 0) + value
 
     def draw(self, screen):
         screen.blit(self.image, self.rect)
