@@ -96,6 +96,7 @@ class Gameplay(BaseState):
         self.player = None
         self.enemies = []
         self.projectiles = []
+        self.font = pygame.font.Font(None, 36)
 
     def on_enter(self, data=None):
         print("Entering Gameplay")
@@ -141,13 +142,27 @@ class Gameplay(BaseState):
                         if enemy in self.enemies:
                             self.enemies.remove(enemy)
 
+        # Player damage logic
+        if self.player:
+            for enemy in self.enemies:
+                if enemy.is_attacking and enemy.rect.colliderect(self.player.rect):
+                    self.player.health -= 1
+
         # Remove projectiles that are off-screen
         self.projectiles = [p for p in self.projectiles if 0 < p.x < 800 and 0 < p.y < 600]
+
+        # Player death logic
+        if self.player and self.player.health <= 0:
+            self.state_manager.set_state("CHARACTER_SELECTION")
 
     def draw(self, screen):
         screen.fill((0, 100, 0)) # Green background
         if self.player:
             self.player.draw(screen)
+            # Draw player health
+            health_text = self.font.render(f"Health: {self.player.health}", True, (255, 255, 255))
+            screen.blit(health_text, (10, 10))
+
         for enemy in self.enemies:
             enemy.draw(screen)
         for projectile in self.projectiles:

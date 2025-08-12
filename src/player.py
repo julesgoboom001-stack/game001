@@ -4,6 +4,7 @@ from projectile import Projectile
 class Player:
     def __init__(self, character):
         self.character = character
+        self.health = self.character.stats["health"]
         self.x = 400
         self.y = 300
         self.speed = 5

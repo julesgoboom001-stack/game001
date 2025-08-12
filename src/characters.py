@@ -11,7 +11,7 @@ class Warrior(Character):
     def __init__(self):
         super().__init__(
             name="Warrior",
-            stats={"strength": 10, "dexterity": 5, "intelligence": 3},
+            stats={"strength": 10, "dexterity": 5, "intelligence": 3, "health": 150},
             sprite="assets/sprites/warrior.ppm",
             sprite_walk="assets/sprites/warrior_walk.ppm"
         )
@@ -20,7 +20,7 @@ class Mage(Character):
     def __init__(self):
         super().__init__(
             name="Mage",
-            stats={"strength": 3, "dexterity": 5, "intelligence": 10},
+            stats={"strength": 3, "dexterity": 5, "intelligence": 10, "health": 80},
             sprite="assets/sprites/mage.ppm",
             sprite_walk="assets/sprites/mage_walk.ppm"
         )
@@ -29,7 +29,7 @@ class Rogue(Character):
     def __init__(self):
         super().__init__(
             name="Rogue",
-            stats={"strength": 5, "dexterity": 10, "intelligence": 5},
+            stats={"strength": 5, "dexterity": 10, "intelligence": 5, "health": 100},
             sprite="assets/sprites/rogue.ppm",
             sprite_walk="assets/sprites/rogue_walk.ppm"
         )
