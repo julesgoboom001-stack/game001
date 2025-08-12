@@ -1,13 +1,14 @@
 import pygame
 
 class Projectile:
-    def __init__(self, x, y, dx, dy):
+    def __init__(self, x, y, dx, dy, power):
         self.x = x
         self.y = y
         self.dx = dx
         self.dy = dy
         self.speed = 10
-        self.sprite = pygame.image.load("assets/sprites/projectile.ppm").convert()
+        self.damage = power.damage
+        self.sprite = pygame.image.load(power.projectile_sprite).convert()
         self.rect = self.sprite.get_rect(center=(self.x, self.y))
 
     def update(self):

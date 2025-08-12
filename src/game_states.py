@@ -100,7 +100,11 @@ class Gameplay(BaseState):
 
     def on_enter(self, data=None):
         print("Entering Gameplay")
-        if data and "character_name" in data:
+        if data and "player" in data:
+            # Continue with existing player (e.g., after level up)
+            self.player = data["player"]
+        elif data and "character_name" in data:
+            # Start a new game
             character_name = data["character_name"]
             print(f"Selected character: {character_name}")
             character_data = character_classes[character_name]()
@@ -109,6 +113,7 @@ class Gameplay(BaseState):
             # Spawn an enemy
             self.enemies.append(Enemy(100, 100))
         else:
+            # Should not happen, but as a fallback, go to character selection
             print("No character selected, returning to selection.")
             self.state_manager.set_state("CHARACTER_SELECTION")
 
@@ -135,12 +140,16 @@ class Gameplay(BaseState):
         for projectile in self.projectiles[:]: # Iterate over a copy
             for enemy in self.enemies[:]: # Iterate over a copy
                 if projectile.rect.colliderect(enemy.rect):
-                    enemy.health -= 10
+                    enemy.health -= projectile.damage
                     if projectile in self.projectiles:
                         self.projectiles.remove(projectile)
                     if enemy.health <= 0:
                         if enemy in self.enemies:
                             self.enemies.remove(enemy)
+                            if self.player:
+                                if self.player.add_xp(enemy.xp_value):
+                                    self.player.level_up()
+                                    self.state_manager.set_state("LEVEL_UP", {"player": self.player})
 
         # Player damage logic
         if self.player:
@@ -162,8 +171,63 @@ class Gameplay(BaseState):
             # Draw player health
             health_text = self.font.render(f"Health: {self.player.health}", True, (255, 255, 255))
             screen.blit(health_text, (10, 10))
+            # Draw player level and xp
+            level_text = self.font.render(f"Level: {self.player.level}", True, (255, 255, 255))
+            screen.blit(level_text, (10, 40))
+            xp_text = self.font.render(f"XP: {self.player.xp} / {self.player.xp_to_next_level}", True, (255, 255, 255))
+            screen.blit(xp_text, (10, 70))
+            # Draw selected power
+            if self.player.selected_power:
+                power_text = self.font.render(f"Power: {self.player.selected_power.name}", True, (255, 255, 255))
+                screen.blit(power_text, (10, 560))
 
         for enemy in self.enemies:
             enemy.draw(screen)
         for projectile in self.projectiles:
             projectile.draw(screen)
+
+from powers import all_powers
+
+class LevelUp(BaseState):
+    def __init__(self, state_manager):
+        super().__init__(state_manager)
+        self.font = pygame.font.Font(None, 36)
+        # For now, a hardcoded list of powers to learn
+        self.available_powers = list(all_powers.values())
+        self.selected_index = 0
+        self.player = None
+
+    def on_enter(self, data=None):
+        print("Entering Level Up screen")
+        self.player = data.get("player") if data else None
+
+    def handle_events(self, events):
+        super().handle_events(events)
+        for event in events:
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_UP:
+                    self.selected_index = (self.selected_index - 1) % len(self.available_powers)
+                elif event.key == pygame.K_DOWN:
+                    self.selected_index = (self.selected_index + 1) % len(self.available_powers)
+                elif event.key == pygame.K_RETURN:
+                    if self.player:
+                        selected_power = self.available_powers[self.selected_index]
+                        if selected_power not in self.player.powers:
+                            self.player.powers.append(selected_power)
+                            print(f"Learned new power: {selected_power.name}")
+                        else:
+                            print(f"Already know {selected_power.name}")
+                    # This should pass back the player object to the gameplay state
+                    self.state_manager.set_state("GAMEPLAY", {"player": self.player})
+
+    def draw(self, screen):
+        screen.fill((50, 50, 50))
+        title_text = self.font.render("Level Up! Choose a new power:", True, (255, 255, 255))
+        title_rect = title_text.get_rect(center=(400, 100))
+        screen.blit(title_text, title_rect)
+
+        for i, power in enumerate(self.available_powers):
+            color = (255, 255, 0) if i == self.selected_index else (255, 255, 255)
+            text = self.font.render(power.name, True, color)
+            text_rect = text.get_rect(center=(400, 200 + i * 50))
+            screen.blit(text, text_rect)

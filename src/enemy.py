@@ -7,6 +7,7 @@ class Enemy:
         self.y = y
         self.health = 100
         self.speed = 2
+        self.xp_value = 50
 
         self.sprites = [
             pygame.image.load("assets/sprites/enemy.ppm").convert(),

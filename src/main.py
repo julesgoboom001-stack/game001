@@ -1,5 +1,5 @@
 import pygame
-from game_states import StateManager, CharacterSelection, Gameplay
+from game_states import StateManager, CharacterSelection, Gameplay, LevelUp
 
 # Initialize Pygame
 pygame.init()
@@ -22,10 +22,12 @@ def main():
     # Create states
     character_selection_state = CharacterSelection(state_manager)
     gameplay_state = Gameplay(state_manager)
+    level_up_state = LevelUp(state_manager)
 
     # Add states to the manager
     state_manager.add_state("CHARACTER_SELECTION", character_selection_state)
     state_manager.add_state("GAMEPLAY", gameplay_state)
+    state_manager.add_state("LEVEL_UP", level_up_state)
 
     # Set the initial state
     state_manager.set_state("CHARACTER_SELECTION")

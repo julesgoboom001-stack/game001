@@ -1,11 +1,13 @@
 # src/characters.py
+from powers import fireball, ice_bolt, dagger_throw, throwing_axe
 
 class Character:
-    def __init__(self, name, stats, sprite, sprite_walk):
+    def __init__(self, name, stats, sprite, sprite_walk, powers):
         self.name = name
         self.stats = stats
         self.sprite = sprite
         self.sprite_walk = sprite_walk
+        self.powers = powers
 
 class Warrior(Character):
     def __init__(self):
@@ -13,7 +15,8 @@ class Warrior(Character):
             name="Warrior",
             stats={"strength": 10, "dexterity": 5, "intelligence": 3, "health": 150},
             sprite="assets/sprites/warrior.ppm",
-            sprite_walk="assets/sprites/warrior_walk.ppm"
+            sprite_walk="assets/sprites/warrior_walk.ppm",
+            powers=[throwing_axe]
         )
 
 class Mage(Character):
@@ -22,7 +25,8 @@ class Mage(Character):
             name="Mage",
             stats={"strength": 3, "dexterity": 5, "intelligence": 10, "health": 80},
             sprite="assets/sprites/mage.ppm",
-            sprite_walk="assets/sprites/mage_walk.ppm"
+            sprite_walk="assets/sprites/mage_walk.ppm",
+            powers=[fireball, ice_bolt]
         )
 
 class Rogue(Character):
@@ -31,7 +35,8 @@ class Rogue(Character):
             name="Rogue",
             stats={"strength": 5, "dexterity": 10, "intelligence": 5, "health": 100},
             sprite="assets/sprites/rogue.ppm",
-            sprite_walk="assets/sprites/rogue_walk.ppm"
+            sprite_walk="assets/sprites/rogue_walk.ppm",
+            powers=[dagger_throw]
         )
 
 # A dictionary to easily access all character classes
