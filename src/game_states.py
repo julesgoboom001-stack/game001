@@ -87,11 +87,15 @@ class CharacterSelection(BaseState):
             screen.blit(text, text_rect)
 
 from player import Player
+from enemy import Enemy
+from projectile import Projectile
 
 class Gameplay(BaseState):
     def __init__(self, state_manager):
         super().__init__(state_manager)
         self.player = None
+        self.enemies = []
+        self.projectiles = []
 
     def on_enter(self, data=None):
         print("Entering Gameplay")
@@ -100,23 +104,51 @@ class Gameplay(BaseState):
             print(f"Selected character: {character_name}")
             character_data = character_classes[character_name]()
             self.player = Player(character_data)
+
+            # Spawn an enemy
+            self.enemies.append(Enemy(100, 100))
         else:
             print("No character selected, returning to selection.")
             self.state_manager.set_state("CHARACTER_SELECTION")
 
     def on_exit(self):
         print("Exiting Gameplay")
+        self.enemies = []
+        self.projectiles = []
 
     def handle_events(self, events):
         super().handle_events(events)
         if self.player:
-            self.player.handle_events(events)
+            new_projectiles = self.player.handle_events(events)
+            self.projectiles.extend(new_projectiles)
 
     def update(self):
         if self.player:
             self.player.update()
+        for enemy in self.enemies:
+            enemy.update(self.player)
+        for projectile in self.projectiles:
+            projectile.update()
+
+        # Combat logic
+        for projectile in self.projectiles[:]: # Iterate over a copy
+            for enemy in self.enemies[:]: # Iterate over a copy
+                if projectile.rect.colliderect(enemy.rect):
+                    enemy.health -= 10
+                    if projectile in self.projectiles:
+                        self.projectiles.remove(projectile)
+                    if enemy.health <= 0:
+                        if enemy in self.enemies:
+                            self.enemies.remove(enemy)
+
+        # Remove projectiles that are off-screen
+        self.projectiles = [p for p in self.projectiles if 0 < p.x < 800 and 0 < p.y < 600]
 
     def draw(self, screen):
         screen.fill((0, 100, 0)) # Green background
         if self.player:
             self.player.draw(screen)
+        for enemy in self.enemies:
+            enemy.draw(screen)
+        for projectile in self.projectiles:
+            projectile.draw(screen)

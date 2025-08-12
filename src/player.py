@@ -1,4 +1,5 @@
 import pygame
+from projectile import Projectile
 
 class Player:
     def __init__(self, character):
@@ -21,8 +22,13 @@ class Player:
         self.animation_speed = 10 # lower is faster
 
     def handle_events(self, events):
-        # Keystate handling is done in update
-        pass
+        new_projectiles = []
+        for event in events:
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    # Shoot a projectile to the right
+                    new_projectiles.append(Projectile(self.x, self.y, 1, 0))
+        return new_projectiles
 
     def update(self):
         self.is_moving = False
