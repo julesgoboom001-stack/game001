@@ -1,6 +1,7 @@
 import pygame
 from characters import character_classes
 from client import GameClient
+from items import all_items
 
 class StateManager:
     def __init__(self, screen):
@@ -145,9 +146,7 @@ class CharacterSelection(BaseState):
 from player import Player
 from enemy import Enemy
 from projectile import Projectile
-from items import all_items
 from skills import ResourceNode
-from items import all_items
 
 class Gameplay(BaseState):
     def __init__(self, state_manager):
