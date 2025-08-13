@@ -284,6 +284,7 @@ class Gameplay(BaseState):
                                 self.player.inventory.append(node.item_yield)
                                 self.player.skills[node.skill].add_xp(node.xp_gain)
                                 print(f"Mined {node.item_yield.name}! Gained {node.xp_gain} {node.skill} XP.")
+                                self.check_quest_progress("gather", node.item_yield.name.lower().replace(" ", "_"))
                                 self.resource_nodes.remove(node)
 
     def update(self):
@@ -325,6 +326,7 @@ class Gameplay(BaseState):
                         if enemy in self.enemies:
                             self.enemies.remove(enemy)
                             if self.player:
+                                self.check_quest_progress("kill", "any") # TODO: Differentiate enemy types
                                 self.player.inventory.append(all_items["sword"])
                                 print("You got a sword!")
                                 if self.player.add_xp(enemy.xp_value):
@@ -343,6 +345,11 @@ class Gameplay(BaseState):
         # Player death logic
         if self.player and self.player.health <= 0:
             self.state_manager.set_state("CHARACTER_SELECTION")
+
+    def check_quest_progress(self, event_type, target):
+        if self.player:
+            for quest in self.player.active_quests:
+                quest.update_progress(event_type, target)
 
     def handle_server_message(self, data):
         message_type = data.get("type")
@@ -716,3 +723,71 @@ class Trading(BaseState):
         pygame.draw.rect(screen, (0, 255, 0), (350, 500, 150, 50))
         confirm_text = self.font.render("Confirm (C)", True, (0, 0, 0))
         screen.blit(confirm_text, (360, 515))
+
+class QuestLog(BaseState):
+    def __init__(self, state_manager):
+        super().__init__(state_manager)
+        self.font = pygame.font.Font(None, 36)
+        self.daily_quests = []
+        self.player = None
+        self.selected_daily_quest_index = 0
+
+    def on_enter(self, data=None):
+        self.daily_quests = get_daily_quests()
+        self.player = self.state_manager.states["GAMEPLAY"].player
+
+    def handle_events(self, events):
+        super().handle_events(events)
+        for event in events:
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_j:
+                    self.state_manager.set_state("GAMEPLAY")
+                elif event.key == pygame.K_UP:
+                    self.selected_daily_quest_index = (self.selected_daily_quest_index - 1) % len(self.daily_quests)
+                elif event.key == pygame.K_DOWN:
+                    self.selected_daily_quest_index = (self.selected_daily_quest_index + 1) % len(self.daily_quests)
+                elif event.key == pygame.K_RETURN:
+                    if self.daily_quests:
+                        selected_quest = self.daily_quests[self.selected_daily_quest_index]
+                        if selected_quest not in self.player.active_quests and selected_quest.id not in self.player.completed_quests:
+                            self.player.active_quests.append(selected_quest)
+                            print(f"Quest '{selected_quest.title}' accepted!")
+                elif event.key == pygame.K_t:
+                    if self.daily_quests:
+                        selected_quest = self.daily_quests[self.selected_daily_quest_index]
+                        if selected_quest in self.player.active_quests and selected_quest.is_complete:
+                            self.player.add_xp(selected_quest.reward.xp)
+                            for item in selected_quest.reward.items:
+                                self.player.inventory.append(item)
+                            self.player.active_quests.remove(selected_quest)
+                            self.player.completed_quests.append(selected_quest.id)
+                            print(f"Quest '{selected_quest.title}' turned in!")
+
+    def draw(self, screen):
+        screen.fill((100, 80, 60))
+
+        # Daily Quests
+        daily_title = self.font.render("Daily Quests", True, (255, 255, 255))
+        screen.blit(daily_title, (50, 50))
+        for i, quest in enumerate(self.daily_quests):
+            color = (255, 255, 0) if i == self.selected_daily_quest_index else (255, 255, 255)
+            quest_text = self.font.render(quest.title, True, color)
+            screen.blit(quest_text, (50, 100 + i * 40))
+
+        # Active Quests
+        active_title = self.font.render("Active Quests", True, (255, 255, 255))
+        screen.blit(active_title, (400, 50))
+        if self.player:
+            for i, quest in enumerate(self.player.active_quests):
+                quest_text_str = f"{quest.title}: {quest.objective.current_amount}/{quest.objective.required_amount}"
+                if quest.is_complete:
+                    quest_text_str += " (Complete)"
+                quest_text = self.font.render(quest_text_str, True, (255, 255, 255))
+                screen.blit(quest_text, (400, 100 + i * 40))
+
+        # Turn in button (for selected daily quest, if it's active and complete)
+        if self.daily_quests:
+            selected_quest = self.daily_quests[self.selected_daily_quest_index]
+            if selected_quest in self.player.active_quests and selected_quest.is_complete:
+                turn_in_text = self.font.render("Press 'T' to Turn In", True, (0, 255, 0))
+                screen.blit(turn_in_text, (50, 500))
