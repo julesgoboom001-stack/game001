@@ -313,6 +313,70 @@ class Player:
             elif self.element == "Light":
                 self.stats['damage_reduction'] = self.stats.get('damage_reduction', 0) + 0.15
 
+        # Hunter Bonuses
+        elif self.character.name == "Hunter":
+            if self.element == "Fire":
+                self.stats['dexterity'] = int(self.stats['dexterity'] * 1.15)
+            elif self.element == "Earth":
+                self.stats['health'] = int(self.stats['health'] * 1.10)
+                self.stats['damage_reduction'] = self.stats.get('damage_reduction', 0) + 0.05
+            elif self.element == "Poison":
+                self.stats['dexterity'] = int(self.stats['dexterity'] * 1.10)
+                self.stats['lifesteal'] = self.stats.get('lifesteal', 0) + 0.05
+            elif self.element == "Water":
+                self.stats['cooldown_reduction'] = self.stats.get('cooldown_reduction', 0) + 0.15
+            elif self.element == "Air":
+                self.speed *= 1.10
+                self.stats['cooldown_reduction'] = self.stats.get('cooldown_reduction', 0) + 0.05
+            elif self.element == "Dark":
+                self.stats['lifesteal'] = self.stats.get('lifesteal', 0) + 0.10
+            elif self.element == "Light":
+                self.stats['intelligence'] = int(self.stats['intelligence'] * 1.10)
+                self.stats['damage_reduction'] = self.stats.get('damage_reduction', 0) + 0.05
+
+        # Wizard Bonuses
+        elif self.character.name == "Wizard":
+            if self.element == "Fire":
+                self.stats['intelligence'] = int(self.stats['intelligence'] * 1.20)
+            elif self.element == "Earth":
+                self.stats['health'] = int(self.stats['health'] * 1.20)
+            elif self.element == "Poison":
+                self.stats['intelligence'] = int(self.stats['intelligence'] * 1.15)
+                self.stats['lifesteal'] = self.stats.get('lifesteal', 0) + 0.05
+            elif self.element == "Water":
+                self.stats['cooldown_reduction'] = self.stats.get('cooldown_reduction', 0) + 0.10
+                self.stats['health'] = int(self.stats['health'] * 1.10)
+            elif self.element == "Air":
+                self.speed *= 1.15
+            elif self.element == "Dark":
+                self.stats['intelligence'] = int(self.stats['intelligence'] * 1.25)
+                self.stats['health'] = int(self.stats['health'] * 0.90)
+            elif self.element == "Light":
+                self.stats['intelligence'] = int(self.stats['intelligence'] * 1.15)
+                self.stats['damage_reduction'] = self.stats.get('damage_reduction', 0) + 0.05
+
+        # Engineer Bonuses
+        elif self.character.name == "Engineer":
+            if self.element == "Fire":
+                self.stats['strength'] = int(self.stats['strength'] * 1.10)
+                self.stats['intelligence'] = int(self.stats['intelligence'] * 1.15)
+            elif self.element == "Earth":
+                self.stats['health'] = int(self.stats['health'] * 1.25)
+            elif self.element == "Poison":
+                self.stats['intelligence'] = int(self.stats['intelligence'] * 1.15)
+                self.stats['lifesteal'] = self.stats.get('lifesteal', 0) + 0.05
+            elif self.element == "Water":
+                self.stats['health'] = int(self.stats['health'] * 1.10)
+                self.stats['cooldown_reduction'] = self.stats.get('cooldown_reduction', 0) + 0.10
+            elif self.element == "Air":
+                self.stats['cooldown_reduction'] = self.stats.get('cooldown_reduction', 0) + 0.15
+            elif self.element == "Dark":
+                self.stats['intelligence'] = int(self.stats['intelligence'] * 1.20)
+                self.stats['lifesteal'] = self.stats.get('lifesteal', 0) + 0.05
+            elif self.element == "Light":
+                self.stats['intelligence'] = int(self.stats['intelligence'] * 1.15)
+                self.stats['health'] = int(self.stats['health'] * 1.10)
+
         # After applying bonuses, it's good to log the final stats for debugging
         print(f"Final stats for {self.character.name} ({self.element}): {self.stats}")
         print(f"Final speed: {self.speed}")
