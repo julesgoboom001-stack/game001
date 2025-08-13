@@ -1,5 +1,14 @@
 import pygame
 from characters import character_classes
+from player import Player
+from enemy import Enemy
+from projectile import Projectile
+from items import all_items
+from skills import ResourceNode
+from map import GameMap
+from world_generator import WorldGenerator
+from powers import all_powers
+from recipes import recipes
 
 class StateManager:
     def __init__(self, screen):
@@ -86,12 +95,6 @@ class CharacterSelection(BaseState):
             text_rect = text.get_rect(center=(400, 200 + i * 50))
             screen.blit(text, text_rect)
 
-from player import Player
-from enemy import Enemy
-from projectile import Projectile
-from items import all_items
-from skills import ResourceNode
-
 class Gameplay(BaseState):
     def __init__(self, state_manager):
         super().__init__(state_manager)
@@ -99,7 +102,10 @@ class Gameplay(BaseState):
         self.enemies = []
         self.projectiles = []
         self.resource_nodes = []
+        self.game_map = None
         self.font = pygame.font.Font(None, 36)
+        self.wall_sprite = pygame.image.load("assets/sprites/wall.ppm").convert()
+        self.floor_sprite = pygame.image.load("assets/sprites/floor.ppm").convert()
 
     def on_enter(self, data=None):
         print("Entering Gameplay")
@@ -111,6 +117,14 @@ class Gameplay(BaseState):
             character_data = character_classes[character_name]()
             self.player = Player(character_data)
 
+            world_generator = WorldGenerator(25, 19)
+            self.game_map = world_generator.generate_map()
+
+            # Find a starting position for the player
+            start_x, start_y = self.find_start_pos()
+            self.player.x = start_x * 32
+            self.player.y = start_y * 32
+
             self.enemies.append(Enemy(100, 100))
             self.resource_nodes.append(
                 ResourceNode(200, 200, item_yield=all_items["copper_ore"], skill="mining", xp_gain=10, sprite_path="assets/sprites/copper_vein.ppm")
@@ -119,12 +133,15 @@ class Gameplay(BaseState):
             print("No character selected, returning to selection.")
             self.state_manager.set_state("CHARACTER_SELECTION")
 
+    def find_start_pos(self):
+        for x in range(self.game_map.width):
+            for y in range(self.game_map.height):
+                if not self.game_map.tiles[x][y].blocked:
+                    return x, y
+        return None # Should not happen if the map is valid
+
     def on_exit(self):
         print("Exiting Gameplay")
-        # Don't clear everything, so we can return from other states
-        # self.enemies = []
-        # self.projectiles = []
-        # self.resource_nodes = []
 
     def handle_events(self, events):
         super().handle_events(events)
@@ -149,7 +166,7 @@ class Gameplay(BaseState):
 
     def update(self):
         if self.player:
-            self.player.update()
+            self.player.update(self.game_map)
         for enemy in self.enemies:
             enemy.update(self.player)
         for projectile in self.projectiles:
@@ -166,7 +183,7 @@ class Gameplay(BaseState):
                         if enemy in self.enemies:
                             self.enemies.remove(enemy)
                             if self.player:
-                                self.player.inventory.append(all_items["sword"])
+                                self.player.inventory.append(all_items["bronze_sword"])
                                 print("You got a sword!")
                                 if self.player.add_xp(enemy.xp_value):
                                     self.player.level_up()
@@ -186,7 +203,10 @@ class Gameplay(BaseState):
             self.state_manager.set_state("CHARACTER_SELECTION")
 
     def draw(self, screen):
-        screen.fill((0, 100, 0))
+        screen.fill((0, 0, 0))
+        if self.game_map:
+            self.game_map.draw(screen, self.wall_sprite, self.floor_sprite)
+
         for node in self.resource_nodes:
             node.draw(screen)
         if self.player:
@@ -197,6 +217,8 @@ class Gameplay(BaseState):
             screen.blit(level_text, (10, 40))
             xp_text = self.font.render(f"XP: {self.player.xp} / {self.player.xp_to_next_level}", True, (255, 255, 255))
             screen.blit(xp_text, (10, 70))
+            gold_text = self.font.render(f"Gold: {self.player.gold}", True, (255, 255, 0))
+            screen.blit(gold_text, (10, 100))
             if self.player.selected_power:
                 power_text = self.font.render(f"Power: {self.player.selected_power.name}", True, (255, 255, 255))
                 screen.blit(power_text, (10, 560))
@@ -205,8 +227,6 @@ class Gameplay(BaseState):
             enemy.draw(screen)
         for projectile in self.projectiles:
             projectile.draw(screen)
-
-from powers import all_powers
 
 class LevelUp(BaseState):
     def __init__(self, state_manager):
@@ -250,8 +270,6 @@ class LevelUp(BaseState):
             text_rect = text.get_rect(center=(400, 200 + i * 50))
             screen.blit(text, text_rect)
 
-from recipes import recipes
-
 class Crafting(BaseState):
     def __init__(self, state_manager):
         super().__init__(state_manager)
@@ -278,7 +296,6 @@ class Crafting(BaseState):
                     if self.player:
                         selected_recipe = self.recipes[self.selected_index]
 
-                        # Check if player has materials
                         can_craft = True
                         for item_name, required_amount in selected_recipe.materials.items():
                             current_amount = sum(1 for item in self.player.inventory if item.name.lower().replace(" ", "_") == item_name)
@@ -287,7 +304,6 @@ class Crafting(BaseState):
                                 break
 
                         if can_craft:
-                            # Consume materials
                             for item_name, required_amount in selected_recipe.materials.items():
                                 for _ in range(required_amount):
                                     for item in self.player.inventory:
@@ -295,15 +311,13 @@ class Crafting(BaseState):
                                             self.player.inventory.remove(item)
                                             break
 
-                            # Add crafted item
                             self.player.inventory.append(selected_recipe.result_item)
                             print(f"Crafted {selected_recipe.name}!")
                         else:
                             print("Not enough materials.")
 
     def draw(self, screen):
-        screen.fill((80, 40, 20)) # Brown background
-
+        screen.fill((80, 40, 20))
         title_text = self.font.render("Crafting", True, (255, 255, 255))
         screen.blit(title_text, (350, 20))
 

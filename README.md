@@ -4,10 +4,13 @@ This project is a top-down, action RPG in the vein of the Diablo series.
 
 ## Features
 
-*   **Character Classes:** Multiple character classes with unique abilities.
-*   **Randomized Loot:** A deep and engaging loot system with procedurally generated items.
-*   **Dungeon Crawling:** Explore vast, procedurally generated dungeons.
-*   **Combat:** Fast-paced, satisfying combat with a variety of monsters.
+*   **Character Classes:** Choose between three classes: Warrior, Mage, and Rogue, each with unique starting stats.
+*   **Combat System:** Engage in real-time combat with enemies. Use different attack powers and aim with the mouse.
+*   **Experience and Leveling:** Gain experience by defeating enemies and level up to become more powerful.
+*   **Power Progression:** Learn new attack powers when you level up.
+*   **Inventory and Equipment:** Collect loot from enemies and equip it to boost your stats.
+*   **Crafting and Gathering:** Gather resources like ore and craft them into useful items.
+*   **Procedurally Generated Maps:** Explore a new, randomly generated dungeon every time you play.
 
 ## Getting Started
 

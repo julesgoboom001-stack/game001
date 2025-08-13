@@ -10,6 +10,7 @@ class Player:
         self.level = 1
         self.xp = 0
         self.xp_to_next_level = 100
+        self.gold = 0
 
         self.inventory = []
         self.equipment = {}
@@ -75,21 +76,35 @@ class Player:
 
         return new_projectiles
 
-    def update(self):
+    def update(self, game_map):
         self.is_moving = False
         keys = pygame.key.get_pressed()
+
+        dx = 0
+        dy = 0
+
         if keys[pygame.K_LEFT] or keys[pygame.K_a]:
-            self.x -= self.speed
+            dx = -self.speed
             self.is_moving = True
         if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
-            self.x += self.speed
+            dx = self.speed
             self.is_moving = True
         if keys[pygame.K_UP] or keys[pygame.K_w]:
-            self.y -= self.speed
+            dy = -self.speed
             self.is_moving = True
         if keys[pygame.K_DOWN] or keys[pygame.K_s]:
-            self.y += self.speed
+            dy = self.speed
             self.is_moving = True
+
+        new_x = self.x + dx
+        new_y = self.y + dy
+
+        map_x = int(new_x / 32)
+        map_y = int(new_y / 32)
+
+        if not game_map.tiles[map_x][map_y].blocked:
+            self.x = new_x
+            self.y = new_y
 
         self.rect.center = (self.x, self.y)
 

@@ -1,7 +1,14 @@
 # Documentation
 
-This directory contains all project documentation, such as:
+This directory contains all project documentation.
 
-*   **Game Design Document:** A detailed description of the game's design.
-*   **Technical Documentation:** Documentation for the source code, APIs, etc.
-*   **Art Style Guide:** A guide for creating art assets for the game.
+## Project Overview
+
+For a high-level overview of the project, its architecture, and its core systems, see the [Project Overview](PROJECT_OVERVIEW.md).
+
+## Other Documents
+
+This directory may also contain other documents, such as:
+*   Game Design Document
+*   Technical Documentation
+*   Art Style Guide
